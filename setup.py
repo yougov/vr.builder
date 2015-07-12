@@ -7,6 +7,7 @@ setup(
     version='1.1',
     author='Brent Tubbs',
     author_email='brent.tubbs@gmail.com',
+    url='https://bitbucket.org/yougov/vr.builder',
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
