@@ -144,7 +144,7 @@ def _cmd_build(build_data, runner_cmd, saver):
         cmd = runner, run_cmd, 'buildproc.yaml'
         return subprocess.check_call(cmd, stderr=subprocess.STDOUT)
 
-    with _setup_container(run, container_path):
+    with _setup_container(run):
         try:
             with _prepare_build(container_path, user, build_data, app_folder):
                 run(runner_cmd)
@@ -157,7 +157,7 @@ def _cmd_build(build_data, runner_cmd, saver):
 
 
 @contextlib.contextmanager
-def _setup_container(run, container_path):
+def _setup_container(run):
     try:
         run('setup')
         yield
