@@ -141,10 +141,10 @@ def _cmd_build(build_data, runner_cmd, saver):
         # copy the builder.sh script into place.
         script_src = pkg_resources.resource_filename('vr.builder',
                                                  'scripts/builder.sh')
-        script_dst = os.path.join(container_path, 'builder.sh')
+        script_dst = path.Path(container_path) / 'builder.sh'
         shutil.copy(script_src, script_dst)
         # Make sure builder.sh is chmod a+x
-        path.path(script_dst).chmod('a+x')
+        script_dst.chmod('a+x')
 
         # make /app/vendor
         slash_app = os.path.join(container_path, 'app')
