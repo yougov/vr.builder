@@ -155,11 +155,12 @@ def _cmd_build(build_data, runner_cmd, saver):
 def _setup_container(runner, container_path):
     setup_cmd = runner, 'setup', 'buildproc.yaml'
     teardown_cmd = runner, 'teardown', 'buildproc.yaml'
+    invoke = functools.partial(subprocess.check_call, stderr=subprocess.STDOUT)
     try:
-        subprocess.check_call(setup_cmd, stderr=subprocess.STDOUT)
+        invoke(setup_cmd)
         yield
     finally:
-        subprocess.check_call(teardown_cmd, stderr=subprocess.STDOUT)
+        invoke(teardown_cmd)
 
 
 def _do_build(runner, container_path, runner_cmd, user, build_data, app_folder):
