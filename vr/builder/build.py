@@ -22,16 +22,59 @@ from vr.common.paths import get_container_path
 from vr.builder.slugignore import clean_slug_dir
 
 
+class NullSaver(object):
+    def save_compile_log(self, app_folder):
+        pass
+
+    def make_tarball(self, app_folder, build_data):
+        pass
+
+
+class OutputSaver(object):
+    def __init__(self):
+        self.outfolder = os.getcwd()
+
+    def save_compile_log(self, app_folder):
+        "Copy compilation log into outfolder"
+        compile_log_src = os.path.join(app_folder, '.compile.log')
+        if os.path.isfile(compile_log_src):
+            compile_log_dest = os.path.join(self.outfolder, 'compile.log')
+            shutil.copyfile(compile_log_src, compile_log_dest)
+        else:
+            print("No file at %s" % compile_log_src)
+
+    def make_tarball(self, app_folder, build_data):
+        """
+        Following a successful build, create a tarball and build result.
+        """
+        # slugignore
+        clean_slug_dir(app_folder)
+
+        # tar up the result
+        with tarfile.open('build.tar.gz', 'w:gz') as tar:
+            tar.add(app_folder, arcname='')
+        build_data.build_md5 = file_md5('build.tar.gz')
+
+        tardest = os.path.join(self.outfolder, 'build.tar.gz')
+        shutil.move('build.tar.gz', tardest)
+
+        build_data_path = os.path.join(self.outfolder, 'build_result.yaml')
+        print("Writing", build_data_path)
+        with open(build_data_path, 'wb') as f:
+            f.write(build_data.as_yaml())
+
+
 def cmd_build(build_data, runner_cmd='run', make_tarball=True):
     # runner_cmd may be 'run' or 'shell'.
 
-    outfolder = os.getcwd()
+    saver = OutputSaver() if make_tarball else NullSaver()
 
     with tmpdir():
-        _cmd_build(build_data, runner_cmd, make_tarball, outfolder)
+        app_folder = _cmd_build(build_data, runner_cmd, saver)
+        saver.make_tarball(app_folder, build_data)
 
 
-def _cmd_build(build_data, runner_cmd, make_tarball, outfolder):
+def _cmd_build(build_data, runner_cmd, saver):
     here = os.getcwd()
     user = getattr(build_data, 'user', 'nobody')
 
@@ -115,14 +158,7 @@ def _cmd_build(build_data, runner_cmd, make_tarball, outfolder):
         build_data.buildpack_version = bp.version
     finally:
         try:
-            # Copy compilation log into outfolder
-            if make_tarball:
-                compile_log_src = os.path.join(app_folder, '.compile.log')
-                if os.path.isfile(compile_log_src):
-                    compile_log_dest = os.path.join(outfolder, 'compile.log')
-                    shutil.copyfile(compile_log_src, compile_log_dest)
-                else:
-                    print("No file at %s" % compile_log_src)
+            saver.save_compile_log(app_folder)
         finally:
             # Clean up container
             teardown_cmd = runner, 'teardown', 'buildproc.yaml'
@@ -132,22 +168,6 @@ def _cmd_build(build_data, runner_cmd, make_tarball, outfolder):
         shutil.rmtree(cachefolder, ignore_errors=True)
         shutil.move('cache/buildpack_cache', cachefolder)
 
-    if make_tarball:
-        # slugignore
-        clean_slug_dir(app_folder)
-
-        # tar up the result
-        with tarfile.open('build.tar.gz', 'w:gz') as tar:
-            tar.add(app_folder, arcname='')
-        build_data.build_md5 = file_md5('build.tar.gz')
-
-        tardest = os.path.join(outfolder, 'build.tar.gz')
-        shutil.move('build.tar.gz', tardest)
-
-        build_data_path = os.path.join(outfolder, 'build_result.yaml')
-        print("Writing", build_data_path)
-        with open(build_data_path, 'wb') as f:
-            f.write(build_data.as_yaml())
 
 def _write_buildproc_yaml(build_data, env, user, cmd, volumes):
     """
