@@ -8,6 +8,7 @@ import pkg_resources
 import tarfile
 import sys
 import collections
+import functools
 
 from six.moves import urllib
 
@@ -20,6 +21,9 @@ from vr.builder.models import (BuildPack, update_buildpack, update_app,
 from vr.common.models import ProcData
 from vr.common.paths import get_container_path
 from vr.builder.slugignore import clean_slug_dir
+
+
+pkg_filename = functools.partial(pkg_resources.resource_filename, 'vr.builder')
 
 
 class NullSaver(object):
@@ -139,8 +143,7 @@ def _cmd_build(build_data, runner_cmd, saver):
         setup_cmd = runner, 'setup', 'buildproc.yaml'
         subprocess.check_call(setup_cmd, stderr=subprocess.STDOUT)
         # copy the builder.sh script into place.
-        script_src = pkg_resources.resource_filename('vr.builder',
-                                                 'scripts/builder.sh')
+        script_src = pkg_filename('scripts/builder.sh')
         script_dst = path.Path(container_path) / 'builder.sh'
         shutil.copy(script_src, script_dst)
         # Make sure builder.sh is chmod a+x
