@@ -9,6 +9,7 @@ import tarfile
 import sys
 import collections
 import functools
+import contextlib
 
 from six.moves import urllib
 
@@ -139,24 +140,29 @@ def _cmd_build(build_data, runner_cmd, saver):
     else:
         runner = 'vrun'
 
-    try:
-        _do_build(runner, container_path, runner_cmd, user, build_data, app_folder)
-    finally:
+    with _setup_container(runner, container_path):
         try:
-            saver.save_compile_log(app_folder)
+            _do_build(runner, container_path, runner_cmd, user, build_data, app_folder)
         finally:
-            # Clean up container
-            teardown_cmd = runner, 'teardown', 'buildproc.yaml'
-            subprocess.check_call(teardown_cmd, stderr=subprocess.STDOUT)
+            saver.save_compile_log(app_folder)
 
     with lock_or_wait(cachefolder):
         shutil.rmtree(cachefolder, ignore_errors=True)
         shutil.move('cache/buildpack_cache', cachefolder)
 
 
-def _do_build(runner, container_path, runner_cmd, user, build_data, app_folder):
+@contextlib.contextmanager
+def _setup_container(runner, container_path):
     setup_cmd = runner, 'setup', 'buildproc.yaml'
-    subprocess.check_call(setup_cmd, stderr=subprocess.STDOUT)
+    teardown_cmd = runner, 'teardown', 'buildproc.yaml'
+    try:
+        subprocess.check_call(setup_cmd, stderr=subprocess.STDOUT)
+        yield
+    finally:
+        subprocess.check_call(teardown_cmd, stderr=subprocess.STDOUT)
+
+
+def _do_build(runner, container_path, runner_cmd, user, build_data, app_folder):
     # copy the builder.sh script into place.
     script_src = pkg_filename('scripts/builder.sh')
     script_dst = path.Path(container_path) / 'builder.sh'
