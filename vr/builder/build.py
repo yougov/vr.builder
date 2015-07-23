@@ -140,13 +140,14 @@ def _cmd_build(build_data, runner_cmd, saver):
     else:
         runner = 'vrun'
 
-    def run(run_cmd=runner_cmd):
+    def run(run_cmd):
         cmd = runner, run_cmd, 'buildproc.yaml'
         return subprocess.check_call(cmd, stderr=subprocess.STDOUT)
 
     with _setup_container(run, container_path):
         try:
-            _do_build(run, container_path, user, build_data, app_folder)
+            with _prepare_build(container_path, user, build_data, app_folder):
+                run(runner_cmd)
         finally:
             saver.save_compile_log(app_folder)
 
@@ -164,7 +165,8 @@ def _setup_container(run, container_path):
         run('teardown')
 
 
-def _do_build(run, container_path, user, build_data, app_folder):
+@contextlib.contextmanager
+def _prepare_build(container_path, user, build_data, app_folder):
     # copy the builder.sh script into place.
     script_src = pkg_filename('scripts/builder.sh')
     script_dst = path.Path(container_path) / 'builder.sh'
@@ -176,7 +178,7 @@ def _do_build(run, container_path, user, build_data, app_folder):
     slash_app = os.path.join(container_path, 'app')
     mkdir(os.path.join(slash_app, 'vendor'))
     chowntree(slash_app, username=user)
-    run()
+    yield
     build_data.release_data = recover_release_data(app_folder)
     bp = recover_buildpack(app_folder)
     build_data.buildpack_url = bp.url + '#' + bp.version
