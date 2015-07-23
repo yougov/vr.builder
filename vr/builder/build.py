@@ -140,25 +140,7 @@ def _cmd_build(build_data, runner_cmd, saver):
         runner = 'vrun'
 
     try:
-        setup_cmd = runner, 'setup', 'buildproc.yaml'
-        subprocess.check_call(setup_cmd, stderr=subprocess.STDOUT)
-        # copy the builder.sh script into place.
-        script_src = pkg_filename('scripts/builder.sh')
-        script_dst = path.Path(container_path) / 'builder.sh'
-        shutil.copy(script_src, script_dst)
-        # Make sure builder.sh is chmod a+x
-        script_dst.chmod('a+x')
-
-        # make /app/vendor
-        slash_app = os.path.join(container_path, 'app')
-        mkdir(os.path.join(slash_app, 'vendor'))
-        chowntree(slash_app, username=user)
-        build_cmd = runner, runner_cmd, 'buildproc.yaml'
-        subprocess.check_call(build_cmd, stderr=subprocess.STDOUT)
-        build_data.release_data = recover_release_data(app_folder)
-        bp = recover_buildpack(app_folder)
-        build_data.buildpack_url = bp.url + '#' + bp.version
-        build_data.buildpack_version = bp.version
+        _do_build(runner, container_path, runner_cmd, user, build_data, app_folder)
     finally:
         try:
             saver.save_compile_log(app_folder)
@@ -170,6 +152,28 @@ def _cmd_build(build_data, runner_cmd, saver):
     with lock_or_wait(cachefolder):
         shutil.rmtree(cachefolder, ignore_errors=True)
         shutil.move('cache/buildpack_cache', cachefolder)
+
+
+def _do_build(runner, container_path, runner_cmd, user, build_data, app_folder):
+    setup_cmd = runner, 'setup', 'buildproc.yaml'
+    subprocess.check_call(setup_cmd, stderr=subprocess.STDOUT)
+    # copy the builder.sh script into place.
+    script_src = pkg_filename('scripts/builder.sh')
+    script_dst = path.Path(container_path) / 'builder.sh'
+    shutil.copy(script_src, script_dst)
+    # Make sure builder.sh is chmod a+x
+    script_dst.chmod('a+x')
+
+    # make /app/vendor
+    slash_app = os.path.join(container_path, 'app')
+    mkdir(os.path.join(slash_app, 'vendor'))
+    chowntree(slash_app, username=user)
+    build_cmd = runner, runner_cmd, 'buildproc.yaml'
+    subprocess.check_call(build_cmd, stderr=subprocess.STDOUT)
+    build_data.release_data = recover_release_data(app_folder)
+    bp = recover_buildpack(app_folder)
+    build_data.buildpack_url = bp.url + '#' + bp.version
+    build_data.buildpack_version = bp.version
 
 
 def _write_buildproc_yaml(build_data, env, user, cmd, volumes):
