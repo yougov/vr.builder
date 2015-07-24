@@ -97,8 +97,12 @@ def _cmd_build(build_data, runner_cmd, saver):
 
     app_folder_inside = os.path.join('/build', app_basename)
 
+    def _volume(name):
+        "Return a volume mount mapping of a named folder into the root"
+        return [here / name, '/' + name]
+
     volumes = [
-        [build_folder, '/build']
+        _volume('build')
     ]
 
     buildpack_url = getattr(build_data, 'buildpack_url', None)
@@ -108,7 +112,7 @@ def _cmd_build(build_data, runner_cmd, saver):
     env_key = 'BUILDPACK_DIR' if buildpack_url else 'BUILDPACK_DIRS'
     env = {env_key: buildpacks_env}
     volumes.extend(
-        [here / folder, '/' + folder]
+        _volume(folder)
         for folder in buildpack_folders
     )
 
@@ -126,7 +130,7 @@ def _cmd_build(build_data, runner_cmd, saver):
         # created.  Ensure that now.
         mkdir(CACHE_HOME)
     chowntree('cache', username=user)
-    volumes.append([here / 'cache', '/cache'])
+    volumes.append(_volume('cache'))
 
 
     cmd = '/builder.sh %s /cache/buildpack_cache' % app_folder_inside
