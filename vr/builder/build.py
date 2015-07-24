@@ -80,11 +80,11 @@ def cmd_build(build_data, runner_cmd='run', make_tarball=True):
 
 
 def _cmd_build(build_data, runner_cmd, saver):
-    here = os.getcwd()
+    here = path.Path.getcwd()
     user = getattr(build_data, 'user', 'nobody')
 
     # clone/pull repo to latest
-    build_folder = os.path.join(here, 'build')
+    build_folder = here / 'build'
     mkdir(build_folder)
     app_folder = pull_app(build_folder,
                           build_data.app_name,
@@ -105,14 +105,14 @@ def _cmd_build(build_data, runner_cmd, saver):
         buildpack_folders = []
         folder = pull_buildpack(buildpack_url)
         env = {'BUILDPACK_DIR': '/' + folder}
-        volumes.append([os.path.join(here, folder), '/' + folder])
+        volumes.append([here / folder, '/' + folder])
     else:
         # Pull the buildpacks only if one is not specified.
         buildpack_folders = pull_buildpacks(build_data.buildpack_urls)
         buildpacks_env = ':'.join('/' + bp for bp in buildpack_folders)
         env = {'BUILDPACK_DIRS': buildpacks_env}
         for folder in buildpack_folders:
-            volumes.append([os.path.join(here, folder), '/' + folder])
+            volumes.append([here / folder, '/' + folder])
 
     # Some buildpacks (Node) like to rm -rf the whole cache folder they're
     # given.  They can't do that to a mountpoint, so we have to provide a
@@ -128,7 +128,7 @@ def _cmd_build(build_data, runner_cmd, saver):
         # created.  Ensure that now.
         mkdir(CACHE_HOME)
     chowntree('cache', username=user)
-    volumes.append([os.path.join(here, 'cache'), '/cache'])
+    volumes.append([here / 'cache', '/cache'])
 
 
     cmd = '/builder.sh %s /cache/buildpack_cache' % app_folder_inside
