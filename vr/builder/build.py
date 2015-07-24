@@ -15,6 +15,7 @@ from six.moves import urllib
 
 import yaml
 import path
+from jaraco.itertools import always_iterable
 
 from vr.common.utils import tmpdir, mkdir, file_md5, chowntree
 from vr.builder.models import (BuildPack, update_buildpack, update_app,
@@ -101,18 +102,15 @@ def _cmd_build(build_data, runner_cmd, saver):
     ]
 
     buildpack_url = getattr(build_data, 'buildpack_url', None)
-    if buildpack_url:
-        buildpack_folders = []
-        folder = pull_buildpack(buildpack_url)
-        env = {'BUILDPACK_DIR': '/' + folder}
-        volumes.append([here / folder, '/' + folder])
-    else:
-        # Pull the buildpacks only if one is not specified.
-        buildpack_folders = pull_buildpacks(build_data.buildpack_urls)
-        buildpacks_env = ':'.join('/' + bp for bp in buildpack_folders)
-        env = {'BUILDPACK_DIRS': buildpacks_env}
-        for folder in buildpack_folders:
-            volumes.append([here / folder, '/' + folder])
+    buildpack_urls = always_iterable(buildpack_url or build_data.buildpack_urls)
+    buildpack_folders = pull_buildpacks(buildpack_urls)
+    buildpacks_env = ':'.join('/' + bp for bp in buildpack_folders)
+    env_key = 'BUILDPACK_DIR' if buildpack_url else 'BUILDPACK_DIRS'
+    env = {env_key: buildpacks_env}
+    volumes.extend(
+        [here / folder, '/' + folder]
+        for folder in buildpack_folders
+    )
 
     # Some buildpacks (Node) like to rm -rf the whole cache folder they're
     # given.  They can't do that to a mountpoint, so we have to provide a
