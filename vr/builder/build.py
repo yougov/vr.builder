@@ -135,10 +135,7 @@ def _cmd_build(build_data, runner_cmd, saver):
 
     container_path = _write_buildproc_yaml(build_data, env, user, cmd, volumes)
 
-    if build_data.image_url is None:
-        runner = 'vrun_precise'
-    else:
-        runner = 'vrun'
+    runner = 'vrun' if build_data.image_url else 'vrun_precise'
 
     def run(run_cmd):
         cmd = runner, run_cmd, 'buildproc.yaml'
