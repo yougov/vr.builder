@@ -1,8 +1,9 @@
 import os
 import pwd
-import hashlib
 import logging
 import shutil
+
+from six.moves import urllib
 
 import yaml
 import utc
@@ -13,6 +14,9 @@ from vr.common.utils import run, mkdir, chdir
 from vr.common.paths import VR_ROOT
 
 from vr.builder.slugignore import clean_slug_dir
+from .hashes import hash_text
+from .py31compat import _defrag
+
 
 # If we're root, and RAPTOR_HOME hasn't been set, then put all checkouts in
 # /apps/builder
@@ -158,7 +162,7 @@ class lock_or_wait(yg.lockfile.FileLock):
         mkdir(folder)
         self.folder = folder
         self.target = target
-        hash_name = hashlib.md5(target).hexdigest()
+        hash_name = hash_text(target)
         lock_filename = os.path.join(folder, hash_name)
         super(lock_or_wait, self).__init__(lock_filename, timeout=0)
 
@@ -171,8 +175,8 @@ def update_buildpack(url, packs_dir=PACKS_HOME, vcs_type=None):
     nicely readable, followed by an MD5 hash of the full URL (thus
     distinguishing two buildpacks with the same 'name' but different URLs).
     """
-    just_url = url.partition('#')[0]
-    bpfolder = repo.basename(url) + '-' + hashlib.md5(just_url).hexdigest()
+    defrag = _defrag(urllib.parse.urldefrag(url))
+    bpfolder = repo.basename(url) + '-' + hash_text(defrag.url)
     dest = os.path.join(packs_dir, bpfolder)
     # TODO: check for whether the buildpack in the folder is really the same as
     # the one we've been asked to add.
@@ -183,8 +187,8 @@ def update_buildpack(url, packs_dir=PACKS_HOME, vcs_type=None):
 
 
 def update_app(name, url, version, repos_dir=REPO_HOME, vcs_type=None):
-    just_url = url.partition('#')[0]
-    appfolder = repo.basename(url) + '-' + hashlib.md5(just_url).hexdigest()
+    defrag = _defrag(urllib.parse.urldefrag(url))
+    appfolder = repo.basename(url) + '-' + hash_text(defrag.url)
     dest = os.path.join(repos_dir, appfolder)
     mkdir(repos_dir)
     app = App(dest, url, vcs_type=vcs_type)
@@ -197,7 +201,7 @@ def get_unique_repo_folder(repo_url):
     Given a repository URL, return a folder name that's human-readable,
     filesystem-friendly, and guaranteed unique to that repo.
     """
-    return '%s-%s' % (repo.basename(repo_url), hashlib.md5(repo_url).hexdigest())
+    return '%s-%s' % (repo.basename(repo_url), hash_text(repo_url))
 
 
 def get_build_folder(app_url):

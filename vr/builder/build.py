@@ -1,13 +1,10 @@
 from __future__ import print_function
 
 import os
-import hashlib
 import shutil
 import subprocess
 import pkg_resources
 import tarfile
-import sys
-import collections
 import functools
 import contextlib
 
@@ -23,6 +20,8 @@ from vr.builder.models import (BuildPack, update_buildpack, update_app,
 from vr.common.models import ProcData
 from vr.common.paths import get_container_path
 from vr.builder.slugignore import clean_slug_dir
+from .py31compat import _defrag
+from .hashes import hash_text
 
 
 pkg_filename = functools.partial(pkg_resources.resource_filename, 'vr.builder')
@@ -249,22 +248,13 @@ def recover_buildpack(app_folder):
 
 
 def pull_app(parent_folder, name, url, version, vcs_type):
-    defrag = _defrag_compat(urllib.parse.urldefrag(url))
+    defrag = _defrag(urllib.parse.urldefrag(url))
     with lock_or_wait(defrag.url):
         app = update_app(name, url, version, vcs_type=vcs_type)
-        dest_name = name + '-' + hashlib.md5(defrag.url).hexdigest()
+        dest_name = name + '-' + hash_text(defrag.url)
         dest = os.path.join(parent_folder, dest_name)
         shutil.copytree(app.folder, dest)
     return dest
-
-
-PY32 = sys.version_info >= (3, 2)
-DefragResult = collections.namedtuple('DefragResult', 'url fragment')
-_defrag_compat = (lambda x: x) if PY32 else lambda x: DefragResult(*x)
-"""
-Return a Python 3.2 compatible result from urldefrag.
-TODO: replace with python-futures invocation.
-"""
 
 
 def pull_buildpack(url):
@@ -272,10 +262,10 @@ def pull_buildpack(url):
     Update a buildpack in its shared location, then make a copy into the
     current directory, using an md5 of the url.
     """
-    defrag = _defrag_compat(urllib.parse.urldefrag(url))
+    defrag = _defrag(urllib.parse.urldefrag(url))
     with lock_or_wait(defrag.url):
         bp = update_buildpack(url)
-        dest = bp.basename + '-' + hashlib.md5(defrag.url).hexdigest()
+        dest = bp.basename + '-' + hash_text(defrag.url)
         shutil.copytree(bp.folder, dest)
     return dest
 
