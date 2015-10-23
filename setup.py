@@ -3,6 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='vr.builder',
+    description=('Command line tools to build apps in containers.'),
     namespace_packages=['vr'],
     version='1.1',
     author='Brent Tubbs',
@@ -15,11 +16,17 @@ setup(
         'path.py>=7.1',
         'yg.lockfile',
         'jaraco.itertools',
+        'vr.common>=4.1.3',
     ],
     entry_points={
         'console_scripts': [
             'vbuild = vr.builder.main:main',
         ],
     },
-    description=('Command line tools to build apps in containers.'),
+    setup_requires=[
+        'pytest-runner',
+    ],
+    tests_require=[
+        'pytest',
+    ],
 )
