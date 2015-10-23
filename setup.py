@@ -19,7 +19,7 @@ setup(
     entry_points={
         'console_scripts': [
             'vbuild = vr.builder.main:main',
-        ]
+        ],
     },
     description=('Command line tools to build apps in containers.'),
 )
