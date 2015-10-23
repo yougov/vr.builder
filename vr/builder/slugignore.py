@@ -23,10 +23,7 @@ def is_inside(root, item):
 
     relative = os.path.relpath(root, item)
 
-    if relative.startswith(os.pardir + os.sep):
-        return False
-    else:
-        return True
+    return not relative.startswith(os.pardir + os.sep)
 
 
 def remove(item):
