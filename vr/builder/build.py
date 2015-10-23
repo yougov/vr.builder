@@ -98,7 +98,7 @@ def _cmd_build(build_data, runner_cmd, saver):
 
     def _volume(name):
         "Return a volume mount mapping of a named folder into the root"
-        return [here / name, '/' + name]
+        return [str(here / name), '/' + name]
 
     volumes = [
         _volume('build')
