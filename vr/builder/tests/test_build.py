@@ -1,4 +1,4 @@
-from vr.common.utils import tmpdir, run
+from vr.common.utils import tmpdir
 from vr.common.tests import tmprepo
 from vr.builder.models import BuildPack
 
