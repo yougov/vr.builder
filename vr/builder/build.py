@@ -211,7 +211,7 @@ def _write_buildproc_yaml(build_data, env, user, cmd, volumes):
     })
 
     # write a proc.yaml for the container.
-    with open('buildproc.yaml', 'wb') as f:
+    with open('buildproc.yaml', 'w') as f:
         f.write(buildproc.as_yaml())
     return get_container_path(buildproc)
 
