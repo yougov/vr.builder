@@ -65,7 +65,7 @@ class OutputSaver(object):
 
         build_data_path = os.path.join(self.outfolder, 'build_result.yaml')
         print("Writing", build_data_path)
-        with open(build_data_path, 'wb') as f:
+        with open(build_data_path, 'w') as f:
             f.write(build_data.as_yaml())
 
 
