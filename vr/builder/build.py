@@ -241,7 +241,7 @@ def recover_buildpack(app_folder):
     /.buildpack inside the container.
     """
     filepath = os.path.join(app_folder, '.buildpack')
-    with open(filepath, 'rb') as f:
+    with open(filepath) as f:
         buildpack_picked = f.read()
     buildpack_picked = buildpack_picked.lstrip('/')
     buildpack_picked = buildpack_picked.rstrip('\n')
