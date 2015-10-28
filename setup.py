@@ -5,7 +5,7 @@ setup(
     name='vr.builder',
     description=('Command line tools to build apps in containers.'),
     namespace_packages=['vr'],
-    version='1.2.2',
+    version='1.2.3',
     author='Brent Tubbs',
     author_email='brent.tubbs@gmail.com',
     url='https://bitbucket.org/yougov/vr.builder',
@@ -16,7 +16,7 @@ setup(
         'path.py>=7.1',
         'yg.lockfile',
         'jaraco.itertools',
-        'vr.common>=4.1.3',
+        'vr.common>=4.2.0',
     ],
     entry_points={
         'console_scripts': [
