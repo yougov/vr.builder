@@ -153,6 +153,8 @@ def _cmd_build(build_data, runner_cmd, saver):
         shutil.rmtree(cachefolder, ignore_errors=True)
         shutil.move('cache/buildpack_cache', cachefolder)
 
+    return app_folder
+
 
 @contextlib.contextmanager
 def _setup_container(run):
