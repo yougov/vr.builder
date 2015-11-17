@@ -69,9 +69,21 @@ if [ -z "$BUILDPACK_DIR" ]; then
 fi
 
 echo "Compiling app with $BUILDPACK_DIR"
-set -eo pipefail
+set -o pipefail
 cd $APP_DIR
 $BUILDPACK_DIR/bin/compile $APP_DIR $CACHE_DIR 2>&1 | tee $APP_DIR/.compile.log
+
+# If the build fails, then at least record that the compile script did return.
+# If it doesn't even return, then that indicates that perhaps the container has
+# crashed.
+buildstatus=$?
+touch $APP_DIR/.postbuild.flag
+if [ "$buildstatus" -ne 0 ]; then
+    exit "${buildstatus}"
+fi
+
+set -e
+
 echo "Compilation complete"
 
 # Record the output of the release script.

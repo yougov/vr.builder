@@ -3,8 +3,10 @@ from __future__ import print_function
 import os
 import shutil
 import subprocess
+import sys
 import pkg_resources
 import tarfile
+import traceback
 import functools
 import contextlib
 
@@ -146,6 +148,7 @@ def _cmd_build(build_data, runner_cmd, saver):
         try:
             with _prepare_build(container_path, user, build_data, app_folder):
                 run(runner_cmd)
+                assert_compile_finished(app_folder)
         finally:
             saver.save_compile_log(app_folder)
 
@@ -162,7 +165,14 @@ def _setup_container(run):
         run('setup')
         yield
     finally:
-        run('teardown')
+        # Don't let an error which may occur during setup or in the coroutine
+        # be masked if something goes wrong attempting to teardown the container.
+        try:
+            run('teardown')
+        except Exception:
+            msg = 'WARNING: Error while tearing down container - traceback follows.'
+            print(msg, file=sys.stderr)
+            traceback.print_exception(file=sys.stderr)
 
 
 @contextlib.contextmanager
@@ -216,6 +226,25 @@ def _write_buildproc_yaml(build_data, env, user, cmd, volumes):
     with open('buildproc.yaml', 'w') as f:
         f.write(buildproc.as_yaml())
     return get_container_path(buildproc)
+
+
+def assert_compile_finished(app_folder):
+    """
+    Once builder.sh has invoked the compile script, it should return and we
+    should set a flag to the script returned. If that flag is missing, then
+    it is an indication that the container crashed, and we generate an error.
+
+    This function will clean up the flag after the check is performed, so only
+    call this function once. See issue #141.
+    """
+    fpath = os.path.join(app_folder, '.postbuild.flag')
+    if not os.path.isfile(fpath):
+        msg = 'No postbuild flag set, LXC container may have crashed while building.'
+        raise AssertionError(msg)
+    try:
+        os.remove(fpath)
+    except OSError: # It doesn't matter if it fails.
+        pass
 
 
 def recover_release_data(app_folder):
