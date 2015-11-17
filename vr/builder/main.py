@@ -51,7 +51,7 @@ class BuildData(ConfigData):
                              'buildpack_urls')
 
     def __repr__(self):
-        print('<BuildData: %s-%s>' % (self.app_name, self.version))
+        return '<BuildData: %s-%s>' % (self.app_name, self.version)
 
 
 def main():
