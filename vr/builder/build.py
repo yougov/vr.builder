@@ -33,6 +33,9 @@ class NullSaver(object):
     def save_compile_log(self, app_folder):
         pass
 
+    def save_lxcdebug_log(self, app_folder):
+        pass
+
     def make_tarball(self, app_folder, build_data):
         pass
 
@@ -41,14 +44,22 @@ class OutputSaver(object):
     def __init__(self):
         self.outfolder = os.getcwd()
 
+    def _save_logfile(self, app_folder, srcname, dstname):
+        srclog = os.path.join(app_folder, srcname)
+        if os.path.isfile(srclog):
+            dstlog = os.path.join(self.outfolder, dstname)
+            shutil.copyfile(srclog, dstlog)
+            print('copied %r to %r' % (srclog, dstlog))
+        else:
+            print("No file at %s" % srclog)
+
     def save_compile_log(self, app_folder):
         "Copy compilation log into outfolder"
-        compile_log_src = os.path.join(app_folder, '.compile.log')
-        if os.path.isfile(compile_log_src):
-            compile_log_dest = os.path.join(self.outfolder, 'compile.log')
-            shutil.copyfile(compile_log_src, compile_log_dest)
-        else:
-            print("No file at %s" % compile_log_src)
+        self._save_logfile(app_folder, '.compile.log', 'compile.log')
+
+    def save_lxcdebug_log(self, app_folder):
+        "Copy lxc debug log into outfolder"
+        self._save_logfile(app_folder, '.lxcdebug.log', 'lxcdebug.log')
 
     def make_tarball(self, app_folder, build_data):
         """
@@ -136,7 +147,7 @@ def _cmd_build(build_data, runner_cmd, saver):
 
     cmd = '/builder.sh %s /cache/buildpack_cache' % app_folder_inside
 
-    container_path = _write_buildproc_yaml(build_data, env, user, cmd, volumes)
+    container_path = _write_buildproc_yaml(build_data, env, user, cmd, volumes, app_folder)
 
     runner = 'vrun' if build_data.image_url else 'vrun_precise'
 
@@ -149,6 +160,10 @@ def _cmd_build(build_data, runner_cmd, saver):
             with _prepare_build(container_path, user, build_data, app_folder):
                 run(runner_cmd)
                 assert_compile_finished(app_folder)
+        except:
+            # Only save the LXC debug log if an error occurs.
+            saver.save_lxcdebug_log(app_folder)
+            raise
         finally:
             saver.save_compile_log(app_folder)
 
@@ -195,12 +210,13 @@ def _prepare_build(container_path, user, build_data, app_folder):
     build_data.buildpack_version = bp.version
 
 
-def _write_buildproc_yaml(build_data, env, user, cmd, volumes):
+def _write_buildproc_yaml(build_data, env, user, cmd, volumes, app_folder):
     """
     Write a proc.yaml for the container and return the container path
     """
 
     buildproc = ProcData({
+        'app_folder': str(app_folder),
         'app_name': build_data.app_name,
         'app_repo_url': '',
         'app_repo_type': '',
