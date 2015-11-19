@@ -187,7 +187,7 @@ def _setup_container(run):
         except Exception:
             msg = 'WARNING: Error while tearing down container - traceback follows.'
             print(msg, file=sys.stderr)
-            traceback.print_exception(file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
 
 
 @contextlib.contextmanager
