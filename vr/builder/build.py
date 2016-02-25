@@ -314,7 +314,8 @@ def pull_buildpack(url):
     with lock_or_wait(defrag.url):
         bp = update_buildpack(url)
         dest = bp.basename + '-' + hash_text(defrag.url)
-        shutil.copytree(bp.folder, dest)
+        # copy symlinks instead of their contents
+        shutil.copytree(bp.folder, dest, symlinks=True)
     return dest
 
 
