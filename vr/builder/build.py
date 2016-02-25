@@ -301,7 +301,8 @@ def pull_app(parent_folder, name, url, version, vcs_type):
         app = update_app(name, url, version, vcs_type=vcs_type)
         dest_name = name + '-' + hash_text(defrag.url)
         dest = os.path.join(parent_folder, dest_name)
-        shutil.copytree(app.folder, dest)
+        # copy symlinks instead of their contents
+        shutil.copytree(app.folder, dest, symlinks=True)
     return dest
 
 
@@ -314,8 +315,7 @@ def pull_buildpack(url):
     with lock_or_wait(defrag.url):
         bp = update_buildpack(url)
         dest = bp.basename + '-' + hash_text(defrag.url)
-        # copy symlinks instead of their contents
-        shutil.copytree(bp.folder, dest, symlinks=True)
+        shutil.copytree(bp.folder, dest)
     return dest
 
 
