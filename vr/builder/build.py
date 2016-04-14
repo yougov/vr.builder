@@ -316,6 +316,9 @@ def pull_buildpack(url):
         bp = update_buildpack(url)
         dest = bp.basename + '-' + hash_text(defrag.url)
         shutil.copytree(bp.folder, dest)
+    # Make the buildpack dir writable, per
+    # https://bitbucket.org/yougov/velociraptor/issues/178
+    path.Path(dest).chmod('a+wx')
     return dest
 
 
