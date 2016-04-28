@@ -9,6 +9,7 @@ import tarfile
 import traceback
 import functools
 import contextlib
+import socket
 
 from six.moves import urllib
 
@@ -93,6 +94,7 @@ def cmd_build(build_data, runner_cmd='run', make_tarball=True):
 
 
 def _cmd_build(build_data, runner_cmd, saver):
+    print("Building on", socket.getfqdn())
     here = path.Path.getcwd()
     user = getattr(build_data, 'user', 'nobody')
 
