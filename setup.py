@@ -5,7 +5,7 @@ setup(
     name='vr.builder',
     description=('Command line tools to build apps in containers.'),
     namespace_packages=['vr'],
-    version='1.3.2',
+    version='1.4.0',
     author='Brent Tubbs',
     author_email='brent.tubbs@gmail.com',
     url='https://bitbucket.org/yougov/vr.builder',
