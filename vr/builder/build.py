@@ -157,17 +157,17 @@ def _cmd_build(build_data, runner_cmd, saver):
         cmd = runner, run_cmd, 'buildproc.yaml'
         return subprocess.check_call(cmd, stderr=subprocess.STDOUT)
 
-    with _setup_container(run):
-        try:
+    try:
+        with _setup_container(run):
             with _prepare_build(container_path, user, build_data, app_folder):
                 run(runner_cmd)
                 assert_compile_finished(app_folder)
-        except:
-            # Only save the LXC debug log if an error occurs.
-            saver.save_lxcdebug_log(app_folder)
-            raise
-        finally:
-            saver.save_compile_log(app_folder)
+    except:
+        # Only save the LXC debug log if an error occurs.
+        saver.save_lxcdebug_log(app_folder)
+        raise
+    finally:
+        saver.save_compile_log(app_folder)
 
     with lock_or_wait(cachefolder):
         shutil.rmtree(cachefolder, ignore_errors=True)
