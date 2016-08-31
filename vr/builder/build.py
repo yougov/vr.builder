@@ -6,7 +6,6 @@ import subprocess
 import sys
 import pkg_resources
 import tarfile
-import tempfile
 import traceback
 import functools
 import contextlib
@@ -43,19 +42,13 @@ class NullSaver(object):
 
 
 class OutputSaver(object):
-    def __init__(self, build_data):
+    def __init__(self):
         self.outfolder = os.getcwd()
-        self.build_data = build_data
 
-        app_logs = '{}-{}'.format(build_data.app_name, build_data.version)
-        self.log_dir = os.path.join(tempfile.tempdir, 'vr', 'build', app_logs)
-
-    def save_log_file(self, app_folder, srcname, dstname):
-        if not os.path.isdir(self.log_dir):
-            os.makedirs(self.log_dir, 0o755)
+    def _save_logfile(self, app_folder, srcname, dstname):
         srclog = os.path.join(app_folder, srcname)
         if os.path.isfile(srclog):
-            dstlog = os.path.join(self.log_dir, dstname)
+            dstlog = os.path.join(self.outfolder, dstname)
             shutil.copyfile(srclog, dstlog)
             print('copied %r to %r' % (srclog, dstlog))
         else:
@@ -63,11 +56,11 @@ class OutputSaver(object):
 
     def save_compile_log(self, app_folder):
         "Copy compilation log into outfolder"
-        self.save_log_file(app_folder, '.compile.log', 'compile.log')
+        self._save_logfile(app_folder, '.compile.log', 'compile.log')
 
     def save_lxcdebug_log(self, app_folder):
         "Copy lxc debug log into outfolder"
-        self.save_log_file(app_folder, '.lxcdebug.log', 'lxcdebug.log')
+        self._save_logfile(app_folder, '.lxcdebug.log', 'lxcdebug.log')
 
     def make_tarball(self, app_folder, build_data):
         """
@@ -90,16 +83,10 @@ class OutputSaver(object):
             f.write(build_data.as_yaml())
 
 
-def create_saver(build_data, make_tarball):
-    if make_tarball:
-        return OutputSaver(build_data)
-    return NullSaver()
-
-
 def cmd_build(build_data, runner_cmd='run', make_tarball=True):
     # runner_cmd may be 'run' or 'shell'.
 
-    saver = create_saver(build_data, make_tarball)
+    saver = OutputSaver() if make_tarball else NullSaver()
 
     with tmpdir():
         app_folder = _cmd_build(build_data, runner_cmd, saver)
