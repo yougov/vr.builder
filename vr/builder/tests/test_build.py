@@ -84,6 +84,6 @@ class OutputSaverTest(SaverTestCase):
         self.saver.save_log_file(self.app_folder, 'some.log', 'other.log')
 
         with open(join(self.saver.log_dir, 'other.log')) as f:
-            content = f.read().strip()
+            content = f.read().decode('utf-8').strip()
 
         self.assertEqual(content, 'test')
