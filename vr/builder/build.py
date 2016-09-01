@@ -163,7 +163,6 @@ def _cmd_build(build_data, runner_cmd, saver):
                 run(runner_cmd)
                 assert_compile_finished(app_folder)
     except:
-        # Only save the LXC debug log if an error occurs.
         saver.save_lxcdebug_log(app_folder)
         raise
     finally:
@@ -182,14 +181,7 @@ def _setup_container(run):
         run('setup')
         yield
     finally:
-        # Don't let an error which may occur during setup or in the coroutine
-        # be masked if something goes wrong attempting to teardown the container.
-        try:
-            run('teardown')
-        except Exception:
-            msg = 'WARNING: Error while tearing down container - traceback follows.'
-            print(msg, file=sys.stderr)
-            traceback.print_exc(file=sys.stderr)
+        run('teardown')
 
 
 @contextlib.contextmanager
