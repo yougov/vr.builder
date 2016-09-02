@@ -12,7 +12,7 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'vr.runners>=2.8',
+        'vr.runners>=2.10,<3',
         'path.py>=7.1',
         'yg.lockfile',
         'jaraco.itertools',
