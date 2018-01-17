@@ -162,7 +162,7 @@ def _cmd_build(build_data, runner_cmd, saver):
             with _prepare_build(container_path, user, build_data, app_folder):
                 run(runner_cmd)
                 assert_compile_finished(app_folder)
-    except:
+    except BaseException:
         saver.save_lxcdebug_log(app_folder)
         raise
     finally:
