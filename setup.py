@@ -33,7 +33,7 @@ params = dict(
     ),
     python_requires='>=2.7',
     install_requires=[
-        'vr.runners>=2.10,<3',
+        'vr.runners>=2.10',
         'path.py>=7.1',
         'yg.lockfile',
         'jaraco.itertools',
