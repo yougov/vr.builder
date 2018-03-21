@@ -3,10 +3,8 @@ from __future__ import print_function
 import os
 import shutil
 import subprocess
-import sys
 import pkg_resources
 import tarfile
-import traceback
 import functools
 import contextlib
 import socket
@@ -120,7 +118,8 @@ def _cmd_build(build_data, runner_cmd, saver):
     ]
 
     buildpack_url = getattr(build_data, 'buildpack_url', None)
-    buildpack_urls = always_iterable(buildpack_url or build_data.buildpack_urls)
+    buildpack_urls = always_iterable(
+        buildpack_url or build_data.buildpack_urls)
     buildpack_folders = pull_buildpacks(buildpack_urls)
     buildpacks_env = ':'.join('/' + bp for bp in buildpack_folders)
     env_key = 'BUILDPACK_DIR' if buildpack_url else 'BUILDPACK_DIRS'
@@ -137,7 +136,8 @@ def _cmd_build(build_data, runner_cmd, saver):
     if os.path.isdir(cachefolder):
         with lock_or_wait(cachefolder):
             mkdir('cache')
-            shutil.copytree(cachefolder, 'cache/buildpack_cache', symlinks=True)
+            shutil.copytree(
+                cachefolder, 'cache/buildpack_cache', symlinks=True)
     else:
         mkdir('cache/buildpack_cache')
         # Maybe we're on a brand new host that's never had CACHE_HOME
@@ -146,10 +146,10 @@ def _cmd_build(build_data, runner_cmd, saver):
     chowntree('cache', username=user)
     volumes.append(_volume('cache'))
 
-
     cmd = '/builder.sh %s /cache/buildpack_cache' % app_folder_inside
 
-    container_path = _write_buildproc_yaml(build_data, env, user, cmd, volumes, app_folder)
+    container_path = _write_buildproc_yaml(
+        build_data, env, user, cmd, volumes, app_folder)
 
     runner = 'vrun' if build_data.image_url else 'vrun_precise'
 
@@ -254,7 +254,8 @@ def assert_compile_finished(app_folder):
         raise AssertionError(msg)
     try:
         os.remove(fpath)
-    except OSError: # It doesn't matter if it fails.
+    except OSError:
+        # It doesn't matter if it fails.
         pass
 
 

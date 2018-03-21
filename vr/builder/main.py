@@ -11,10 +11,12 @@ from vr.common.models import ConfigData
 def cmd_shell(build_data):
     cmd_build(build_data, runner_cmd='shell', make_tarball=False)
 
+
 commands = {
     'build': cmd_build,
     'shell': cmd_shell,
 }
+
 
 def get_command(name):
     try:

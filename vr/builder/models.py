@@ -60,7 +60,8 @@ class BuildPack(repo.Repo):
         )
         script = os.path.join(self.folder, 'bin', 'compile')
 
-        cache_folder = os.path.join(CACHE_HOME, get_unique_repo_folder(app.url))
+        cache_folder = os.path.join(
+            CACHE_HOME, get_unique_repo_folder(app.url))
 
         cmd = ' '.join([script, app.folder, cache_folder])
         log.info(cmd)
@@ -81,12 +82,13 @@ class BuildPack(repo.Repo):
         if not os.path.exists(self.folder):
             self.clone()
 
-        rev = rev or self.fragment or None # account for self.fragment=='' case
+        # account for self.fragment=='' case
+        rev = rev or self.fragment or None
 
         if self.vcs_type == 'git':
             if rev is None:
-                # Git needs special handling if no rev is passed.  Don't ask for a
-                # revision, just do a pull.
+                # Git needs special handling if no rev is passed.
+                # Don't ask for a revision, just do a pull.
                 with chdir(self.folder):
                     self.run('git fetch --tags')
                     self.run('git pull origin master')

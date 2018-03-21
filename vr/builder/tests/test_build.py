@@ -2,6 +2,7 @@ from vr.common.utils import tmpdir
 from vr.common.tests import tmprepo
 from vr.builder.models import BuildPack
 
+
 def test_version_in_fragment():
     rev = '16c1dba07ee78d5dbee1f965d91d3d61942ccb67'
     url = 'https://github.com/btubbs/vr_python_example.git#' + rev
@@ -28,4 +29,3 @@ def test_buildpack_update_rev():
         # But passing in a rev needs to be supported still
         r.update(rev)
         assert r.version == rev
-
