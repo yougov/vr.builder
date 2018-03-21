@@ -28,7 +28,7 @@ setup_params = dict(
     include_package_data=True,
     namespace_packages=name.split('.')[:-1],
     install_requires=[
-        'vr.runners>=2.10,<3',
+        'vr.runners>=2.10',
         'path.py>=7.1',
         'yg.lockfile',
         'jaraco.itertools',
