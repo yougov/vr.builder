@@ -4,13 +4,14 @@ language: python
 
 python:
 - 2.7
+- &latest_py3 3.6
 
 jobs:
   fast_finish: true
   include:
   - stage: deploy
     if: tag IS present
-    python: 2.7
+    python: *latest_py3
     install: skip
     script: skip
     deploy:
@@ -33,7 +34,6 @@ notifications:
 cache: pip
 
 install:
-- pip install --upgrade pip setuptools
 - pip install tox tox-venv
 
 script: tox
