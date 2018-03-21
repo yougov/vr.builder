@@ -34,6 +34,7 @@ notifications:
 cache: pip
 
 install:
+- pip install --upgrade pip setuptools
 - pip install tox tox-venv
 
 script: tox
