@@ -10,7 +10,7 @@ import utc
 import yg.lockfile
 
 from vr.common import repo
-from vr.common.utils import run, mkdir, chdir
+from vr.common.utils import run, mkdir
 from vr.common.paths import VR_ROOT
 
 from vr.builder.slugignore import clean_slug_dir
@@ -74,29 +74,6 @@ class BuildPack(repo.Repo):
         assert result.status_code == 0, ("Failed release on %s with %s "
                                          "buildpack" % (app, self.basename))
         return yaml.safe_load(result.output)
-
-    def update(self, rev=None):
-        """
-        Override Repo.update to provide default rev when none is provided.
-        """
-        if not os.path.exists(self.folder):
-            self.clone()
-
-        # account for self.fragment=='' case
-        rev = rev or self.fragment or None
-
-        if self.vcs_type == 'git':
-            if rev is None:
-                # Git needs special handling if no rev is passed.
-                # Don't ask for a revision, just do a pull.
-                with chdir(self.folder):
-                    self.run('git fetch --tags')
-                    self.run('git pull origin master')
-            else:
-                return super(BuildPack, self).update(rev)
-        elif self.vcs_type == 'hg':
-            # Are there actually any mercurial buildpacks?
-            return super(BuildPack, self).update(rev or 'tip')
 
 
 class App(repo.Repo):

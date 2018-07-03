@@ -37,7 +37,7 @@ params = dict(
         'path.py>=7.1',
         'yg.lockfile',
         'jaraco.itertools',
-        'vr.common>=4.3.0',
+        'vr.common>=5.4.1',
     ],
     extras_require={
         'testing': [
