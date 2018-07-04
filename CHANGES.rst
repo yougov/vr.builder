@@ -1,3 +1,8 @@
+1.7.0
+=====
+
+Bump vr.common to accept null revs
+
 1.6.0
 =====
 
