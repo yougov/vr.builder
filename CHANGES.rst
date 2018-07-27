@@ -1,3 +1,9 @@
+1.7.1
+=====
+
+Bump to vr.common 5.4.2 to restore support for short hashes
+and detached tags.
+
 1.7.0
 =====
 

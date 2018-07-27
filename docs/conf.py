@@ -27,6 +27,10 @@ link_files = {
 				pattern=r'PEP[- ](?P<pep_number>\d+)',
 				url='https://www.python.org/dev/peps/pep-{pep_number:0>4}/',
 			),
+			dict(
+				pattern=r'vr\.common (?P<common_ver>\d+(\.\d+){1,2}))',
+				url='{GH}/yougov/vr.common/releases/tag/{common_ver}',
+			),
 		],
 	),
 }
