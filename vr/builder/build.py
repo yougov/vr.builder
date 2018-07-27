@@ -13,7 +13,7 @@ from six.moves import urllib
 
 import yaml
 import path
-from jaraco.itertools import always_iterable
+from more_itertools import always_iterable
 
 from vr.common.utils import tmpdir, mkdir, file_md5, chowntree
 from vr.builder.models import (BuildPack, update_buildpack, update_app,

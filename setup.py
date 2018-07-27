@@ -36,7 +36,7 @@ params = dict(
         'vr.runners>=2.10',
         'path.py>=7.1',
         'yg.lockfile',
-        'jaraco.itertools',
+        'more_itertools',
         'vr.common>=5.4.2',
     ],
     extras_require={
