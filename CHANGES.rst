@@ -1,3 +1,8 @@
+1.8.0
+=====
+
+Pin against dependencies for namespace compatibility.
+
 1.7.1
 =====
 
